@@ -57,9 +57,10 @@ namespace LoaderAndRunner
 
                     //simulate object loading from database that is long running
                     Debug.WriteLine("Loader 1 says: loading item: " + item.Text + " started at: " + DateTime.Now);
-                    Thread.Sleep(2000);
+                    Thread.Sleep(8000);
                     Debug.WriteLine("Loader 1 says: loading item: " + item.Text + " completed at " + DateTime.Now);
                     _itemsToRun.Add(item);
+                    loading.Invoke(new MethodInvoker(() => loading.PerformStep()));
                 }
                 Debug.WriteLine("Loader 1 says: Nothing left to load!");
             }, TaskCreationOptions.LongRunning);
@@ -73,9 +74,10 @@ namespace LoaderAndRunner
 
                     //simulate loading from database that is long running
                     Debug.WriteLine("Loader 2 says: loading item: " + item.Text + " started at: " + DateTime.Now);
-                    Thread.Sleep(2000);
+                    Thread.Sleep(8000);
                     Debug.WriteLine("Loader 2 says: loading item: " + item.Text + " completed at " + DateTime.Now);
                     _itemsToRun.Add(item);
+                    loading.Invoke(new MethodInvoker(() => loading.PerformStep()));
                 }
                 Debug.WriteLine("Loader 2 says: nothing left to load!");
             }, TaskCreationOptions.LongRunning);
@@ -89,7 +91,7 @@ namespace LoaderAndRunner
 
                     //simulate writing information to mainframe emulator
                     Debug.WriteLine("Runner 1 says: running item: " + item.Text + " started at: " + DateTime.Now);
-                    Thread.Sleep(2000);
+                    Thread.Sleep(1000);
                     Debug.WriteLine("Runner 1 says: running item: " + item.Text + " completed at " + DateTime.Now);
 
                     ListViewItem item1 = item;
@@ -97,6 +99,7 @@ namespace LoaderAndRunner
                     Debug.WriteLine("Runner 1 removed item: " + item1.Text + " from ToDo Listview at " + DateTime.Now);
                     itemsCompleted.Invoke(new MethodInvoker(() => itemsCompleted.Items.Add(item1)));
                     Debug.WriteLine("Runner 1 added item: " + item1.Text + " to Completed Listview at " + DateTime.Now);
+                    running.Invoke(new MethodInvoker(() => running.PerformStep()));
                 }
                 Debug.WriteLine("Runner 1 says: Nothing left to run!");
             }, TaskCreationOptions.LongRunning);
@@ -110,15 +113,27 @@ namespace LoaderAndRunner
         {
             // Update UI to reflect background task.
             run.Enabled = false;
+
+            lbLoading.Visible = true;
             loading.Visible = true;
-            loading.MarqueeAnimationSpeed = 30;
+            loading.Minimum = 0;
+            loading.Maximum = 4;
+            loading.Value = 0;
+            loading.Step = 1;
+
+            lbRunning.Visible = true;
+            running.Visible = true;
+            running.Minimum = 0;
+            running.Maximum = 4;
+            running.Value = 0;
+            running.Step = 1;
         }
 
         private void TaskIsComplete()
         {
             // Reset UI.
             run.Invoke(new MethodInvoker(() => run.Enabled = true));
-            loading.Invoke(new MethodInvoker(() => loading.Visible = false));
+            //loading.Invoke(new MethodInvoker(() => loading.Visible = false));
         }
     }
 }
